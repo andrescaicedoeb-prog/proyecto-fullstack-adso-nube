@@ -4,8 +4,8 @@
  */
 
 // URL base del servidor Backend de la Actividad 5
-
-const API_URL = "https://api-adso-grupo-3409609.onrender.com";
+// (CAMBIO: se agregó /tareas al final)
+const API_URL = "https://api-adso-grupo-3409609.onrender.com/tareas";
 
 // Elementos del DOM
 const formTarea = document.getElementById("form-tarea");
