@@ -16,15 +16,9 @@ const loadingSpinner = document.getElementById("loading-spinner");
 const errorMessage = document.getElementById("error-message");
 const contadorTareas = document.getElementById("contador-tareas");
 
-// Evento de inicio: cargar tareas cuando el HTML esté listo
 document.addEventListener("DOMContentLoaded", obtenerTareas);
-
-// Evento del formulario: enviar nueva tarea
 formTarea.addEventListener("submit", crearTarea);
 
-// ==========================================
-// 1. OBTENER TODAS LAS TAREAS (READ - GET /tareas)
-// ==========================================
 async function obtenerTareas() {
     mostrarCargando(true);
     ocultarError();
@@ -36,20 +30,30 @@ async function obtenerTareas() {
             throw new Error(`Error en la petición: ${respuesta.status}`);
         }
 
-        const tareas = await respuesta.json();
-        renderizarTareas(tareas);
+        const datos = await respuesta.json();
+        console.log("Respuesta de la API:", datos);
+
+        // Validar que realmente sea una lista
+        if (!Array.isArray(datos)) {
+            throw new Error("La API no devolvió una lista de tareas.");
+        }
+
+        renderizarTareas(datos);
 
     } catch (error) {
         console.error("Error al obtener tareas:", error);
-        mostrarError("No se pudo conectar con el servidor Backend.");
+
+        if (error instanceof TypeError && error.message.includes("fetch")) {
+            mostrarError("No se pudo conectar con el servidor Backend.");
+        } else {
+            mostrarError(error.message);
+        }
+        contadorTareas.textContent = "0 Tareas";
     } finally {
         mostrarCargando(false);
     }
 }
 
-// ==========================================
-// 2. CREAR UNA NUEVA TAREA (CREATE - POST /tareas)
-// ==========================================
 async function crearTarea(e) {
     e.preventDefault();
 
@@ -62,9 +66,7 @@ async function crearTarea(e) {
     try {
         const respuesta = await fetch(API_URL, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(nuevaTarea)
         });
 
@@ -73,7 +75,6 @@ async function crearTarea(e) {
             throw new Error(dataError.detail || "Error al guardar la tarea");
         }
 
-        // Limpiar formulario y recargar la lista
         formTarea.reset();
         await obtenerTareas();
 
@@ -82,19 +83,12 @@ async function crearTarea(e) {
     }
 }
 
-// ==========================================
-// 3. CAMBIAR ESTADO A COMPLETADA (UPDATE - PUT /tareas/{id})
-// ==========================================
 async function cambiarEstadoTarea(id, estadoActual) {
     try {
         const respuesta = await fetch(`${API_URL}/${id}`, {
             method: "PUT",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                completada: !estadoActual
-            })
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ completada: !estadoActual })
         });
 
         if (!respuesta.ok) {
@@ -109,16 +103,11 @@ async function cambiarEstadoTarea(id, estadoActual) {
     }
 }
 
-// ==========================================
-// 4. ELIMINAR TAREA (DELETE - DELETE /tareas/{id})
-// ==========================================
 async function eliminarTarea(id) {
     if (!confirm("¿Está seguro de eliminar esta tarea permanentemente?")) return;
 
     try {
-        const respuesta = await fetch(`${API_URL}/${id}`, {
-            method: "DELETE"
-        });
+        const respuesta = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
 
         if (!respuesta.ok) {
             throw new Error("Error al eliminar la tarea");
@@ -131,10 +120,6 @@ async function eliminarTarea(id) {
         alert("No se pudo eliminar la tarea.");
     }
 }
-
-// ==========================================
-// FUNCIONES AUXILIARES DE MANIPULACIÓN DEL DOM
-// ==========================================
 
 function renderizarTareas(tareas) {
     contenedorTareas.innerHTML = "";
@@ -161,7 +146,7 @@ function renderizarTareas(tareas) {
             </div>
             <div class="tarea-acciones">
                 <button class="btn ${tarea.completada ? 'btn-primary' : 'btn-success'}"
-                    onclick="cambiarEstadoTarea('${tarea._id}', ${tarea.completada})">
+                        onclick="cambiarEstadoTarea('${tarea._id}', ${tarea.completada})">
                     <i class="fa-solid ${tarea.completada ? 'fa-rotate-left' : 'fa-check'}"></i>
                     ${tarea.completada ? 'Pendiente' : 'Completar'}
                 </button>
@@ -192,9 +177,8 @@ function ocultarError() {
     errorMessage.classList.add("hidden");
 }
 
-// Prevenir inyección XSS en el renderizado
 function escapeHTML(str) {
-    return str.replace(/[&<>'"]/g, tag => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
-    }[tag] || tag));
+    return String(str ?? "").replace(/[&<>'"]/g,
+        tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+    );
 }
