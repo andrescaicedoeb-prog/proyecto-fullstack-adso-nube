@@ -75,6 +75,11 @@ input[type="text"], textarea {
     transition: border-color 0.2s;
 }
 
+/* El textarea solo se puede agrandar hacia abajo (no se sale de la tarjeta) */
+textarea {
+    resize: vertical;
+}
+
 input[type="text"]:focus, textarea:focus {
     border-color: var(--primary-color);
 }
@@ -82,6 +87,7 @@ input[type="text"]:focus, textarea:focus {
 .btn {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
     padding: 10px 20px;
     border: none;
@@ -102,6 +108,8 @@ input[type="text"]:focus, textarea:focus {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
     margin-bottom: 20px;
 }
 
@@ -140,6 +148,7 @@ input[type="text"]:focus, textarea:focus {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 15px;
     transition: transform 0.1s;
 }
 
@@ -157,6 +166,12 @@ input[type="text"]:focus, textarea:focus {
     color: var(--text-muted);
 }
 
+.tarea-info {
+    /* Evita que los textos largos se salgan de la tarjeta */
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
 .tarea-info h3 {
     font-size: 1.1rem;
     margin-bottom: 5px;
@@ -170,4 +185,67 @@ input[type="text"]:focus, textarea:focus {
 .tarea-acciones {
     display: flex;
     gap: 10px;
+}
+
+
+/* ==========================================
+   DISEÑO RESPONSIVE
+   ========================================== */
+
+/* Tablets y celulares (pantallas de 600px o menos) */
+@media (max-width: 600px) {
+
+    body {
+        padding: 12px;
+    }
+
+    .header h1 {
+        font-size: 1.5rem;
+    }
+
+    .header p {
+        font-size: 0.9rem;
+    }
+
+    .card {
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+
+    /* El botón de guardar ocupa todo el ancho */
+    #btn-guardar {
+        width: 100%;
+    }
+
+    /* La tarea pasa de fila a columna */
+    .tarea-item {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    /* Los botones de la tarea ocupan todo el ancho */
+    .tarea-acciones {
+        width: 100%;
+    }
+
+    .tarea-acciones .btn {
+        flex: 1;
+    }
+}
+
+/* Celulares muy pequeños (400px o menos) */
+@media (max-width: 400px) {
+
+    .header h1 {
+        font-size: 1.3rem;
+    }
+
+    .card h2 {
+        font-size: 1.2rem;
+    }
+
+    .btn {
+        padding: 10px 14px;
+        font-size: 0.95rem;
+    }
 }
